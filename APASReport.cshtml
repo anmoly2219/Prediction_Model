@@ -1,0 +1,1094 @@
+﻿@model HTMSAdminDashboard.Areas.V2.Models.APAS.APAS
+
+@{
+    ViewBag.Title = "APAS Report";
+    Layout = "~/Areas/Master/Views/Shared/_Layout.cshtml";
+}
+<style>
+    .fixed-size-chart {
+        margin-left: 748px;
+        width: 600px; /* Adjust this width as needed */
+    }
+
+    #resultContainer {
+        /*width: 800px;*/
+        height: 400px; /* Adjust this value as needed */
+    }
+
+    .ui-multiselect-menu {
+        width: 300px !important;
+        top: 210.845px;
+        left: 1066.92px;
+        /*display: block;*/
+    }
+
+    #chart-container {
+        width: 800px;
+        height: 400px;
+    }
+
+    #myBarChart {
+        width: inherit;
+        height: 100%;
+        DISPLAY: none;
+    }
+
+    #multiselect-container {
+        display: none;
+    }
+
+    .hide-calendar .ui-datepicker-calendar {
+        display: none;
+    }
+
+    .form-control {
+        margin: 0;
+    }
+
+    .ui-multiselect-checkboxes label input {
+        display: inline-block;
+    }
+</style>
+
+<style>
+    .inner_master {
+        max-width: 99%;
+    }
+
+    .buttnbox_right {
+        margin: 0px 0px 10px 0px;
+        padding: 0px;
+        float: right;
+        overflow: hidden;
+        display: flex;
+        place-items: center;
+    }
+
+    /*   .buttnbox_right button {
+            color: #000000 !important;
+            background: #00a2fa !important;
+            width: 90px !important;
+        }*/
+
+    .k-grid-content {
+        height: 380px !important;
+        background: #222d32;
+    }
+
+    .myForms_new .k-widget.k-grid {
+        height: auto !important;
+    }
+
+    .myForms_new textarea {
+        width: 100% !important
+    }
+
+    .StakeHolderMaster_sec > span {
+        width: 100% !important;
+    }
+
+        .StakeHolderMaster_sec > span > span {
+            background: #e6e6e6 url(../img/ui-bg_glass_75_e6e6e6_1x400.png) 50% 50% repeat-x;
+            font-weight: normal;
+            color: #555555;
+            height: 35px;
+        }
+
+            .StakeHolderMaster_sec > span > span > span {
+                line-height: 30px;
+            }
+
+    #clientsDb1 {
+        padding: 5px 15px 15px 15px;
+    }
+</style>
+@using (Html.BeginForm("APASReport", null, FormMethod.Get, new { autocomplete = "false" }))
+{
+    @*<div class="inner_master" style="padding-bottom:40px!important">*@
+    <div class="inner_master">
+        <form id="TxnSpeedFrm" data-role="validator" novalidate="novalidate">
+            <div class="form_ctrlbox myForms_new">
+                <h2>@ViewBag.Title</h2>
+                <!-- Start form_insdebox -->
+                <div class="row">
+
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label for="duration">Duration *</label>
+                            <select id="duration" name="duration" class="form-control" style="cursor: pointer;">
+                                <option value="select">Select</option>
+                                <option value="hour">Hour</option>
+                                @*<option value="day">Day</option>
+                                    <option value="month">Month</option>*@
+
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="">
+                            <label class="" for="date_time" id="fromdt">From Date *</label>
+                            <input type="text" id="FromDate" class="form-control" style="width:250px; cursor:pointer">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="">
+                            <label class="" for="date_time" id="todt"> Date *</label>
+                            <input type="text" id="ToDate" class="form-control" style="width:250px; cursor:pointer">
+                        </div>
+                    </div>
+
+                    <!--<div class="col-md-3">
+                        <div class="mb-3" id="multiselect-container">-->
+                    @*<label for="multiselect">Select Options</label>*@
+                    <!--<select id="multiselect" name="multiselect" class="form-control" multiple="multiple">
+                            </select>
+                        </div>
+                    </div>-->
+
+                    <div class="col-md-3">
+                        <div class="">
+                            <label class="">Location *</label>
+
+                            @Html.DropDownListFor(model => Model.Chainage,
+                                new SelectList(new List<SelectListItem>
+                                {
+                                    new SelectListItem { Text = "GAVHAN", Value = "GAVHAN" },
+                                    new SelectListItem { Text = "SHIVAJI", Value = "SHIVAJI" }
+                                }, "Value", "Text"),
+                                new { id = "selectedSiteLocation", @class = "frm_select validate[required]" })
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="buttnbox_right">
+                            <button type="button" class="button_ext_1" id="btnSubmit" style="width:100px!important">Search</button>
+                            <button type="button" class="button_secondary" id="btnReset" style="width:100px!important">Reset</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+    <div class="inner_master" style="padding-bottom:40px!important">
+        <form id="TxnSpeedFrm" data-role="validator" novalidate="novalidate">
+            <div class="form_ctrlbox myForms_new" style="height: 482px; background: #222d32; ">
+                <h2>Chart</h2>
+                <div id="resultContainer">
+                    @*<div id="myBarChart"></div>*@
+                    <div id="myLineChart" class="fixed-size-chart"></div>
+                    <div id="myBarChart" class="myBarChartsize"></div>
+                    <div id="myGradientLineChart" class="myBarChartsize1"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+}
+
+<script>
+   $(document).ready(function () {
+       $('#btnSubmit').click(function () {
+           debugger;
+            // Get the values from your input fields
+            var from = $('#FromDate').val();
+            var to = $('#ToDate').val();
+            var format = $('#multiselect').val();
+            var duration = $('#duration').val();
+           var chainage = $('#selectedSiteLocation').val();
+
+            if (!format) {
+                format = 'ALL';
+            }
+            if (chainage === "") {
+                chainage = "ALL";
+            }
+            if (duration === "select") {
+                alert("Please select a duration");
+                $('#resultContainer').empty();
+                return;
+            }
+            debugger;
+            var formatLength = format ? format.length : 0;
+            var dateFormat = 'DD/MM/YYYY HH:mm:ss'; // Adjust this format to match your date format
+            var fromDate = moment(from, dateFormat);
+            var toDate = moment(to, dateFormat);
+
+
+            if (!fromDate.isValid() || !toDate.isValid()) {
+                alert('Invalid date format. Please check your input dates.');
+                return;
+            }
+            debugger;
+            switch (duration) {
+                case 'hour':
+                    if ((format == 'ALL' || formatLength > 3) && toDate.isBefore(fromDate.clone().add(1, 'days'))) {
+                        alert('Invalid Date selection. (Minimum 1 day required)');
+                        $('#resultContainer').empty();
+                        return;
+                    }
+                    if ((format == 'ALL' || formatLength > 3)  && toDate.isAfter(fromDate.clone().add(1, 'days').add(1, 'hour'))) {
+                        alert('Invalid Date selection. (Max. 1 day)');
+                        $('#resultContainer').empty();
+                        return;
+                    } else if (formatLength <= 3 && toDate.isAfter(fromDate.clone().add(9, 'days').add(1, 'hour'))) {
+                        alert('Invalid Date selection. (Max. 9 days)');
+                        $('#resultContainer').empty();
+                        return;
+                    }
+                    break;
+                case 'day':
+                    if ((format == 'ALL' || formatLength > 3) && toDate.isBefore(fromDate.clone().add(8, 'days'))) {
+                        alert('Invalid Date selection. (Minimum 8 days required)');
+                        $('#resultContainer').empty();
+                        return;
+                    }
+                    if ((format == 'ALL' || formatLength > 3) && toDate.isAfter(fromDate.clone().add(8, 'days').add(1, 'hour'))) {
+                        alert('Invalid Date selection. (Max. 8 day)');
+                        $('#resultContainer').empty();
+                        return;
+                    } else if (formatLength <= 3 && toDate.isAfter(fromDate.clone().add(30, 'days'))) {
+                        alert('Invalid Date selection. (Max. 30 days)');
+                        $('#FromDate').datetimepicker('setDate', toDate.clone().subtract(30, 'days').toDate());
+                        return;
+                    }
+                    break;
+                 }
+
+
+if (duration === 'hour') {
+    $.ajax({
+        type: 'GET',
+        url: '@Url.Action("GET_ChartData_Hourwise", "APASReport")?from=' + from + '&to=' + to + '&format=' + format + '&chainage=' + chainage + '&duration=' + duration,
+        data: {
+            from: from,
+            to: to,
+            format: format,
+            chainage: chainage
+        },
+        dataType: "json",
+        success: function (response) {
+            debugger;
+            $('#resultContainer').empty()
+                .append('<div id="myBarChart" style="margin-top: 2px; margin: 10px; margin-top: 33px; border: 5px solid grey; border-radius: 15px;"></div>')
+                .append('<div id="myLineChart" style="margin-top: 2px; margin: 10px; border: 5px solid grey; border-radius: 15px;"></div>');
+
+            var data = typeof response === 'string' ? JSON.parse(response) : response;
+
+            if (Array.isArray(data) && data.length > 0) {
+                var times = data.map(item => item.Time); // Map the "Time" field instead of "Date"
+                var actualCounts = data.map(item => parseInt(item.ActualCount) || 0); // Map Actual Count
+                var predictedCounts = data.map(item => parseInt(item.PredictedCount) || 0); // Map Predicted Count
+
+                // Prepare series for the line chart
+                var lineSeries = [
+                    {
+                        type: "line",
+                        data: actualCounts,
+                        name: "Actual Count",
+                        color: "blue"
+                    },
+                    {
+                        type: "line",
+                        data: predictedCounts,
+                        name: "Predicted Count",
+                        color: "red"
+                    }
+                ];
+
+                // Initialize the Kendo UI Chart with the required settings
+                $("#selectedSiteLocation").change(function () {
+                    var selectedChainage = $(this).val(); // Get the selected value from the dropdown
+
+                    // Update the chart title dynamically
+                    $("#myLineChart").kendoChart({
+                        title: {
+                            text: selectedChainage || "Select Chainage", // Use the selected chainage or a default text
+                            color: "white"
+                        },
+                        legend: {
+                            position: "top",
+                            labels: {
+                                color: "white"
+                            }
+                        },
+                        series: lineSeries, // Assuming `lineSeries` is already defined
+                        valueAxis: {
+                            labels: {
+                                format: "{0}",
+                                color: "white"
+                            },
+                            line: {
+                                visible: false
+                            },
+                            axisCrossingValue: 0
+                        },
+                        categoryAxis: {
+                            categories: times, // Assuming `times` is already defined
+                            line: {
+                                visible: false
+                            },
+                            labels: {
+                                rotation: -45,
+                                color: "white"
+                            }
+                        },
+                        tooltip: {
+                            visible: true,
+                            format: "{0}",
+                            template: "#= series.name # : #= value #"
+                        },
+                        chartArea: {
+                            background: "grey"
+                        }
+                    });
+                });
+
+                // Initialize the dropdown with an example on page load
+                $(document).ready(function () {
+                    var initialChainage = $("#selectedSiteLocation").val(); // Get the initial value of the dropdown
+                    $("#myLineChart").kendoChart({
+                        title: {
+                            text: initialChainage || "Select Chainage", // Set initial title
+                            color: "white"
+                        },
+                        legend: {
+                            position: "top",
+                            labels: {
+                                color: "white"
+                            }
+                        },
+                        series: lineSeries, // Assuming `lineSeries` is already defined
+                        valueAxis: {
+                            labels: {
+                                format: "{0}",
+                                color: "white"
+                            },
+                            line: {
+                                visible: false
+                            },
+                            axisCrossingValue: 0
+                        },
+                        categoryAxis: {
+                            categories: times, // Assuming `times` is already defined
+                            line: {
+                                visible: false
+                            },
+                            labels: {
+                                rotation: -45,
+                                color: "white"
+                            }
+                        },
+                        tooltip: {
+                            visible: true,
+                            format: "{0}",
+                            template: "#= series.name # : #= value #"
+                        },
+                        chartArea: {
+                            background: "grey"
+                        }
+                    });
+                });
+
+            } else {
+                alert("No Data Found");
+                $('#resultContainer').empty();
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("AJAX Error:", status, error);
+        }
+    });
+}
+
+
+
+
+
+
+
+
+                else if (duration === 'day') {
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GET_ChartData_Daywise", "APASReport")?from=' + from + '&to=' + to + '&format=' + format + '&chainage=' + chainage,
+                        data: {
+                            from: from,
+                            to: to,
+                            format: format,
+                            chainage: chainage
+                        },
+                        dataType: "json",
+                        success: function (response) {
+                            $('#resultContainer').empty()
+                                .append('<div id="myGradientLineChart" style="margin-top: 5px; margin: 10px; border: 5px solid grey; border-radius: 15px;"></div>')
+                                .append('<div id="myBarChart"style="margin-top: 5px; margin: 10px; border: 5px solid grey; border-radius: 15px;"></div>')
+                                .append('<div id="myLineChart" style="margin-top: 5px; margin: 10px; border: 5px solid grey; border-radius: 15px;"></div>')
+
+
+                            var data = typeof response === 'string' ? JSON.parse(response) : response;
+
+                            if (Array.isArray(data) && data.length === 3) {
+                                var totalCountData = data[0].map(item => ({
+                                    Day: item.Day,
+                                    Count: parseInt(item.Total_count) || 0
+                                }));
+                                var totalDays = totalCountData.map(item => item.Day);
+                                var totalCounts = totalCountData.map(item => item.Count);
+
+                                var pedestrianData = data[1].map(item => ({
+                                    Day: item.Day,
+                                    Count: parseInt(item.PedestrianCount) || 0
+                                }));
+                                var pedestrianDays = pedestrianData.map(item => item.Day);
+                                var pedestrianCounts = pedestrianData.map(item => item.Count);
+
+
+                                var colorData = data[2];
+                                var colorAggregatedData = {};
+                                colorData.forEach(item => {
+                                    var day = item.Day_of_Week;
+                                    if (!colorAggregatedData[day]) {
+                                        colorAggregatedData[day] = { WHITE: 0, BLACK: 0, BLUE: 0, RED: 0, GREEN: 0 };
+                                    }
+                                    colorAggregatedData[day].WHITE += parseInt(item.WHITE) || 0;
+                                    colorAggregatedData[day].BLACK += parseInt(item.BLACK) || 0;
+                                    colorAggregatedData[day].BLUE += parseInt(item.BLUE) || 0;
+                                    colorAggregatedData[day].RED += parseInt(item.RED) || 0;
+                                    colorAggregatedData[day].GREEN += parseInt(item.GREEN) || 0;
+                                });
+                                var colorDays = Object.keys(colorAggregatedData);
+                                var countsWhite = colorDays.map(day => colorAggregatedData[day].WHITE);
+                                var countsBlack = colorDays.map(day => colorAggregatedData[day].BLACK);
+                                var countsBlue = colorDays.map(day => colorAggregatedData[day].BLUE);
+                                var countsRed = colorDays.map(day => colorAggregatedData[day].RED);
+                                var countsGreen = colorDays.map(day => colorAggregatedData[day].GREEN);
+
+
+                                $("#myLineChart").kendoChart({
+                                    title: {
+                                        text: "Pedestrian count at peak hours",
+                                        color: "white"
+                                    },
+                                    legend: {
+                                        position: "top",
+                                        labels: {
+                                            color: "white"
+                                        }
+                                    },
+                                    series: [{
+                                        type: "line",
+                                        data: pedestrianCounts,
+                                        name: "No. of people",
+                                        color: "blue"
+                                    }],
+                                    valueAxis: {
+                                        labels: {
+                                            format: "{0}",
+                                            color: "white"
+                                        },
+                                        line: {
+                                            visible: false
+                                        },
+                                        axisCrossingValue: 0
+                                    },
+                                    categoryAxis: {
+                                        categories: pedestrianDays,
+                                        line: {
+                                            visible: false
+                                        },
+                                        labels: {
+                                            rotation: -45,
+                                            color: "white"
+                                        }
+                                    },
+                                    tooltip: {
+                                        visible: true,
+                                        format: "{0}",
+                                        template: "#= series.name # : #= value #"
+                                    },
+                                    chartArea: {
+                                        background: "grey"
+                                    }
+                                });
+
+                                var lineSeries = [
+                                    {
+                                        type: "line",
+                                        data: countsWhite,
+                                        name: "White",
+                                        color: "white"
+                                    },
+                                    {
+                                        type: "line",
+                                        data: countsBlack,
+                                        name: "Black",
+                                        color: "black"
+                                    },
+                                    {
+                                        type: "line",
+                                        data: countsBlue,
+                                        name: "Blue",
+                                        color: "blue"
+                                    },
+                                    {
+                                        type: "line",
+                                        data: countsRed,
+                                        name: "Red",
+                                        color: "red"
+                                    },
+                                    {
+                                        type: "line",
+                                        data: countsGreen,
+                                        name: "Green",
+                                        color: "green"
+                                    }
+                                ];
+
+
+                                $("#myBarChart").kendoChart({
+                                    title: {
+                                        text: "Pedestrian count based on color",
+                                        color: "white"  // Title text color set to white
+                                    },
+                                    legend: {
+                                        position: "top",
+                                        labels: {
+                                            color: "white"  // Legend labels color set to white
+                                        }
+                                    },
+                                    series: lineSeries,
+                                    valueAxis: {
+                                        labels: {
+                                            format: "{0}",
+                                            color: "white"  // Value axis labels color set to white
+                                        },
+                                        line: {
+                                            visible: false
+                                        },
+                                        axisCrossingValue: 0
+                                    },
+                                    categoryAxis: {
+                                        categories: colorDays,
+                                        line: {
+                                            visible: false
+                                        },
+                                        labels: {
+                                            rotation: -45,
+                                            color: "white"  // Category axis labels color set to white
+                                        }
+                                    },
+                                    tooltip: {
+                                        visible: true,
+                                        format: "{0}",
+                                        template: "#= series.name # : #= value #"
+                                    },
+                                    chartArea: {
+                                        background: "grey"  // Set your desired background color here
+                                    },
+                                    render: function () {
+                                        // Apply border-radius after rendering
+                                        $("#myBarChart").find('.k-chart').css('border-radius', '15px');
+                                    }
+                                });
+
+                                $("#myGradientLineChart").kendoChart({
+                                    title: {
+                                        text: "Total Pedestrian Count",
+                                        color: "white"
+                                    },
+                                    legend: {
+                                        position: "top",
+                                        labels: {
+                                            color: "white"  // Legend labels color set to white
+                                        }
+                                    },
+                                    series: [{
+                                        type: "column",
+                                        data: totalCounts,
+                                        name: "No. of people",
+                                        color: "rgba(0, 99, 132, 0.6)"
+                                    }],
+                                    valueAxis: {
+                                        labels: {
+                                            format: "{0}",
+                                            color: "white"
+                                        },
+                                        line: {
+                                            visible: false
+                                        },
+                                        axisCrossingValue: 0
+                                    },
+                                    categoryAxis: {
+                                        categories: totalDays,
+                                        line: {
+                                            visible: false
+                                        },
+                                        labels: {
+                                            rotation: -45,
+                                            color: "white"
+                                        }
+                                    },
+                                    tooltip: {
+                                        visible: true,
+                                        format: "{0}",
+                                        template: "#= category # : #= value #"
+                                    },
+                                    chartArea: {
+                                        background: "grey"
+                                    }
+                                });
+
+                            } else {
+                                alert("No Data Found");
+                                $('#resultContainer').empty();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("AJAX Error:", status, error);
+                        }
+                    });
+                }
+
+                else if (duration === 'month') {
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("GET_ChartData_Monthwise", "APASReport")?from=' + from + '&to=' + to + '&format=' + format + '&chainage=' + chainage,
+                        datatype: "json",
+                        success: function (response) {
+                            debugger;
+                            $('#resultContainer').empty()
+                                .append('<div id="myGradientLineChart" style="margin-top: 5px; margin: 10px; border: 5px solid grey; border-radius: 15px;"></div>')
+                                .append('<div id="myBarChart"style="margin-top: 5px; margin: 10px; border: 5px solid grey; border-radius: 15px;"></div>')
+                                .append('<div id="myLineChart" style="margin-top: 5px;margin: 10px; border: 5px solid grey; border-radius: 15px;"></div>')
+
+
+                            var data = typeof response === 'string' ? JSON.parse(response) : response;
+
+                            if (Array.isArray(data) && data.length === 3) {
+                                var totalCountData = data[0].map(item => ({
+                                    Month: item.Month_Name,
+                                    Count: parseInt(item.Total_count) || 0
+                                }));
+                                var totalDays = totalCountData.map(item => item.Month);
+                                var totalCounts = totalCountData.map(item => item.Count);
+
+
+
+                                var pedestrianData = data[1].map(item => ({
+                                    Month: item.Month_Name,
+                                    Count: parseInt(item.PedestrianCount) || 0
+                                }));
+                                var pedestrianDays = pedestrianData.map(item => item.Month);
+                                var pedestrianCounts = pedestrianData.map(item => item.Count);
+
+
+                                var colorData = data[2];
+                                var colorAggregatedData = {};
+                                colorData.forEach(item => {
+                                    var day = item.Month_Name;
+                                    if (!colorAggregatedData[day]) {
+                                        colorAggregatedData[day] = { WHITE: 0, BLACK: 0, BLUE: 0, RED: 0, GREEN: 0 };
+                                    }
+                                    colorAggregatedData[day].WHITE += parseInt(item.WHITE) || 0;
+                                    colorAggregatedData[day].BLACK += parseInt(item.BLACK) || 0;
+                                    colorAggregatedData[day].BLUE += parseInt(item.BLUE) || 0;
+                                    colorAggregatedData[day].RED += parseInt(item.RED) || 0;
+                                    colorAggregatedData[day].GREEN += parseInt(item.GREEN) || 0;
+                                });
+                                var colorDays = Object.keys(colorAggregatedData);
+                                var countsWhite = colorDays.map(day => colorAggregatedData[day].WHITE);
+                                var countsBlack = colorDays.map(day => colorAggregatedData[day].BLACK);
+                                var countsBlue = colorDays.map(day => colorAggregatedData[day].BLUE);
+                                var countsRed = colorDays.map(day => colorAggregatedData[day].RED);
+                                var countsGreen = colorDays.map(day => colorAggregatedData[day].GREEN);
+
+                                $("#myLineChart").kendoChart({
+                                    title: {
+                                        text: "Pedestrian count at peak days",
+                                        color: "white",
+                                        color: "white"
+                                    },
+                                    legend: {
+                                        position: "top",
+                                        labels: {
+                                            color: "white"
+                                        }
+                                    },
+                                    series: [{
+                                        type: "line",
+                                        data: pedestrianCounts,
+                                        name: "No. of people",
+                                        color: "blue"
+                                    }],
+                                    valueAxis: {
+                                        labels: {
+                                            format: "{0}",
+                                            color: "white"
+
+                                        },
+                                        line: { visible: false },
+                                        axisCrossingValue: 0
+                                    },
+                                    categoryAxis: {
+                                        categories: pedestrianDays,
+                                        line:
+                                        {
+                                            visible: false
+                                        },
+                                        labels: {
+                                            rotation: -45,
+                                            color: "white"
+                                        }
+                                    },
+                                    tooltip:
+                                    {
+                                        visible: true,
+                                        format: "{0}",
+                                        template: "#= series.name # : #= value #"
+                                    },
+                                    chartArea: {
+                                        background: "grey"
+                                    }
+                                });
+
+                                var lineSeries = [
+                                    {
+                                        type: "line",
+                                        data: countsWhite,
+                                        name: "White",
+                                        color: "white"
+                                    },
+                                    {
+                                        type: "line",
+                                        data: countsBlack,
+                                        name: "Black",
+                                        color: "black"
+                                    },
+                                    {
+                                        type: "line",
+                                        data: countsBlue,
+                                        name: "Blue",
+                                        color: "blue"
+                                    },
+                                    {
+                                        type: "line",
+                                        data: countsRed,
+                                        name: "Red",
+                                        color: "red"
+                                    },
+                                    {
+                                        type: "line",
+                                        data: countsGreen,
+                                        name: "Green",
+                                        color: "green"
+                                    }
+                                ];
+
+                                $("#myBarChart").kendoChart({
+                                    title: {
+                                        text: "Pedestrian count based on color",
+                                        color: "white"
+                                    },
+                                    legend: {
+                                        position: "top",
+                                        labels: {
+                                            color: "white"
+                                        }
+                                    },
+                                    series: lineSeries,
+                                    valueAxis: {
+                                        labels: {
+                                            format: "{0}",
+                                            color: "white"
+                                        },
+                                        line: {
+                                            visible: false
+                                        },
+                                        axisCrossingValue: 0
+                                    },
+                                    categoryAxis: {
+                                        categories: colorDays,
+                                        line: {
+                                            visible: false
+                                        },
+                                        labels: {
+                                            rotation: -45,
+                                            color: "white"
+                                        }
+                                    },
+                                    tooltip: {
+                                        visible: true,
+                                        format: "{0}",
+                                        template: "#= series.name # : #= value #"
+                                    },
+                                    chartArea: {
+                                        background: "grey"
+                                    }
+                                });
+                                $("#myGradientLineChart").kendoChart({
+                                    title: {
+                                        text: "Total Pedestrian Count",
+                                        color: "white"
+                                    },
+                                    legend: {
+                                        position: "top",
+                                        labels: {
+                                            color: "white"
+                                        }
+                                    },
+                                    series: [{
+                                        type: "column",
+                                        data: totalCounts,
+                                        name: "No. of people",
+                                        color: "rgba(0, 99, 132, 0.6)"
+                                    }],
+                                    valueAxis: {
+                                        labels: {
+                                            format: "{0}",
+                                            color: "white"
+                                        },
+                                        line: {
+                                            visible: false
+                                        },
+                                        axisCrossingValue: 0
+                                    },
+                                    categoryAxis: {
+                                        categories: totalDays,
+                                        line: {
+                                            visible: false
+                                        },
+                                        labels: {
+                                            rotation: -45,
+                                            color: "white"
+                                        }
+                                    },
+                                    tooltip: {
+                                        visible: true,
+                                        format: "{0}",
+                                        template: "#= category # : #= value #"
+                                    },
+                                    chartArea: {
+                                        background: "grey"
+                                    }
+                                });
+                            } else {
+                                alert("No Data Found");
+                                $('#resultContainer').empty();
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("AJAX Error:", status, error);
+                        }
+                    });
+                }
+
+        });
+    });
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var durationDropdown = document.getElementById("duration");
+        var multiselectContainer = document.getElementById("multiselect-container");
+
+        durationDropdown.addEventListener("change", function () {
+            if (durationDropdown.value) {
+                multiselectContainer.style.display = "block";
+            } else {
+                multiselectContainer.style.display = "none";
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        $('#FromDate').attr('data-calendar', 'true');
+        $('#ToDate').attr('data-calendar', 'true');
+        $('#btnReset').click();
+
+        $("#multiselect").multiselect({
+            includeSelectAllOption: true,
+            enableFiltering: true,
+            enableCaseInsensitiveFiltering: true,
+            numberDisplayed: true,
+            maxHeight: 200
+        });
+
+        $('#btnReset').click(function () {
+            location.reload();
+        });
+    });
+
+    var fromdt = $("#FromDate");
+    var todt = $('#ToDate');
+
+    function ensureMinimumDifference(fromDate, toDate, duration, format) {
+        var valid = true;
+        debugger;
+        var format = $('#multiselect').val();
+        switch (duration) {
+            case 'hour':
+                if (toDate <= moment(fromDate).add(1, 'days').add(1, 'hour').toDate()) {
+                    valid = false;
+                } else if ((format == null || format.length > 3) && toDate > moment(fromDate).add(1, 'days').add(1, 'hour').toDate()) {
+
+                    valid = false;
+                } else if ((format.length < 4) && toDate > moment(fromDate).add(9, 'days').add(1, 'hour').toDate()) {
+
+                    valid = false;
+                }
+                break;
+            case 'day':
+                if (toDate <= moment(fromDate).add(1, 'days').toDate()) {
+                    valid = false;
+                }
+                else if ((format == null || format.length > 3) && toDate > moment(fromDate).add(8, 'days').add(1, 'hour').toDate()) {
+
+                    valid = false;
+                } else if ((format.length < 4) && toDate > moment(fromDate).add(30, 'days').toDate()) {
+
+                    valid = false;
+                }
+                break;
+        }
+
+        return valid ? toDate : null;
+    }
+
+
+    fromdt.datetimepicker({
+        maxDate: 0,
+        dateFormat: 'dd/mm/yy',
+        changeMonth: true,
+        changeYear: true,
+        timeFormat: 'HH:mm:ss',
+        showSecond: true,
+        cookie: true,
+        yearRange: "-5:+0",
+        onClose: function (dateText, inst) {
+            var fromDate = moment(dateText, 'DD/MM/YYYY HH:mm:ss').toDate();
+            var toDate = todt.datetimepicker('getDate');
+            var duration = $('#duration').val();
+
+            toDate = ensureMinimumDifference(fromDate, toDate, duration);
+
+            if (toDate) {
+                todt.datetimepicker('setDate', toDate);
+                todt.datetimepicker('option', 'minDate', fromDate);
+                todt.datetimepicker('option', 'minDateTime', fromDate);
+                todt.datetimepicker('option', 'maxDate', new Date());
+                todt.datetimepicker('option', 'maxDateTime', new Date());
+            }
+        }
+    }).datetimepicker("setDate", moment().startOf('day').toDate());
+
+    todt.datetimepicker({
+        maxDate: 0,
+        dateFormat: 'dd/mm/yy',
+        timeFormat: 'HH:mm:ss',
+        changeMonth: true,
+        changeYear: true,
+        cookie: true,
+        yearRange: "-100:+0",
+        onClose: function (dateText, inst) {
+            var toDate = moment(dateText, 'DD/MM/YYYY HH:mm:ss').toDate();
+            var fromDate = fromdt.datetimepicker('getDate');
+            var duration = $('#duration').val();
+
+            if (fromDate && toDate <= fromDate) {
+                alert('To Date must be greater than From Date');
+                fromdt.datetimepicker('setDate', moment(toDate).subtract(1, 'hours').toDate());
+            }
+
+            toDate = ensureMinimumDifference(fromDate, toDate, duration);
+
+            if (toDate) {
+                todt.datetimepicker('setDate', toDate);
+                fromdt.datetimepicker('option', 'maxDate', toDate);
+                fromdt.datetimepicker('option', 'maxDateTime', toDate);
+            }
+        }
+    }).datetimepicker("setDate", moment().endOf('day').toDate());
+
+    $('#duration').change(function () {
+        var duration = $(this).val();
+        var toDate = new Date();
+
+        var fromDate = new Date(toDate.getTime());
+
+        switch (duration) {
+            case 'hour':
+                fromDate.setHours(toDate.getHours() - 25);
+                break;
+            case 'day':
+                fromDate.setHours(toDate.getHours() - 193);
+                break;
+            case 'month':
+                fromDate.setFullYear(toDate.getFullYear() - 1);
+                break;
+            default:
+                return;
+        }
+
+        fromdt.datetimepicker('setDate', fromDate);
+        todt.datetimepicker('setDate', toDate);
+    });
+
+    function getParameter() {
+        var fdt = $(fromdt).datetimepicker("getDate");
+        var tdt = $(todt).datetimepicker("getDate");
+
+        return {
+            FromDate: fdt.toISOString(),
+            ToDate: tdt.toISOString(),
+            Equipment: $("#userOptions").val() || []
+        };
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#duration').on('change', function () {
+            var selectedDuration = $(this).val();
+            var $multiselect = $('#multiselect');
+            $multiselect.empty(); // Clear existing options
+
+            if ($multiselect.hasClass('multiselect')) {
+                $multiselect.multiselect('destroy');
+            }
+
+            var label = selectedDuration === 'SELECT' ? 'Select Options' : selectedDuration.charAt(0).toUpperCase() + selectedDuration.slice(1);
+            $('#multiselect-container label').text(label);
+
+            //if (selectedDuration === 'hour') {
+            //    var hours = ['00-01', '01-02', '02-03', '03-04', '04-05', '05-06', '06-07', '07-08', '08-09', '09-10', '10-11', '11-12', '12-13', '13-14', '14-15', '15-16', '16-17', '17-18', '18-19', '19-20', '20-21', '21-22', '22-23', '23-00'];
+            //    $.each(hours, function (index, hour) {
+            //        $multiselect.append('<option value="' + hour + '">' + hour + '</option>');
+        });
+    }
+            else if (selectedDuration === 'day') {
+        var months = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $.each(months, function (index, month) {
+            $multiselect.append('<option value="' + month + '">' + month + '</option>');
+        });
+    } else if (selectedDuration === 'month') {
+        var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        $.each(months, function (index, month) {
+            $multiselect.append('<option value="' + month + '">' + month + '</option>');
+        });
+    }
+
+    $multiselect.multiselect('refresh');
+
+    $multiselect.multiselect('checkAll', false);
+        });
+    });
+
+</script>
+
